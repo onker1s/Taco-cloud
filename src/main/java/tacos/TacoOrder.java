@@ -1,22 +1,22 @@
 package tacos;
-import jakarta.persistence.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.CreditCardNumber;
-
-import java.util.Date;
-import java.util.List;
-import java.util.ArrayList;
+import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.Table;
+import com.datastax.oss.driver.api.core.uuid.Uuids;
 import lombok.Data;
 
-
-
-
-
 @Data
-@Entity
-public class TacoOrder {
+@Table("orders")
+public class TacoOrder implements Serializable {
     @NotBlank(message="Delivery name is required")
     private String deliveryName;
     @NotBlank(message="Street is required")
@@ -36,14 +36,13 @@ public class TacoOrder {
     private String ccCVV;
 
     private static final long serialVersionUID = 1L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @PrimaryKey
+    private UUID id = Uuids.timeBased();
     private Date placedAt = new Date();
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<Taco> tacos = new ArrayList<>();
-    public void addTaco(Taco taco) {
+    // свойства с адресом доставки и номером кредитной карты опущены для краткости
+    @Column("tacos")
+    private List<TacoUDT> tacos = new ArrayList<>();
+    public void addTaco(TacoUDT taco) {
         this.tacos.add(taco);
     }
 }

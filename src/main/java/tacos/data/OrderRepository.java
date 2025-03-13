@@ -5,5 +5,5 @@ import tacos.TacoOrder;
 import java.util.UUID;
 
 public interface OrderRepository
-        extends CrudRepository<TacoOrder, UUID> {
+        extends CrudRepository<TacoOrder, String> {
 }

@@ -69,8 +69,10 @@ public class DesignTacoController {
             @Valid Taco taco, Errors errors,
             @ModelAttribute TacoOrder tacoOrder) {
         if (errors.hasErrors()) {
+            System.out.println("JOOOOOOOOOOOOOOOOOOPAAAAAAAAAAAAAAAAAAAA");
             return "design";
         }
+        System.out.println("|||||||||||||||||||||");
         tacoOrder.addTaco(taco);
         log.info("Processing taco: {}", taco);
         return "redirect:/orders/current";

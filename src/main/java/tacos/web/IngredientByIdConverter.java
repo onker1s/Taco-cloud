@@ -1,12 +1,9 @@
-package tacos;
-import java.util.HashMap;
-import java.util.Map;
+package tacos.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 import tacos.Ingredient;
-import tacos.Ingredient.Type;
 import tacos.data.IngredientRepository;
 
 @Component

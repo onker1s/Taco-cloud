@@ -1,4 +1,4 @@
-package tacos;
+package tacos.web;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import lombok.extern.slf4j.Slf4j;
 import tacos.TacoOrder;
+import tacos.User;
 import tacos.data.OrderRepository;
 
 @Slf4j
@@ -37,7 +38,7 @@ public class OrderController {
         if (errors.hasErrors()) {
             return "orderForm";
         }
-        
+
         order.setUser(user);
 
         orderRepo.save(order);

@@ -1,6 +1,4 @@
-package tacos;
-import java.util.ArrayList;
-import java.util.Arrays;
+package tacos.web;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -19,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import tacos.Ingredient;
 import tacos.Ingredient.Type;
 import tacos.Taco;
+import tacos.TacoOrder;
 import tacos.data.IngredientRepository;
 
 @Slf4j
@@ -69,10 +68,8 @@ public class DesignTacoController {
             @Valid Taco taco, Errors errors,
             @ModelAttribute TacoOrder tacoOrder) {
         if (errors.hasErrors()) {
-            System.out.println("JOOOOOOOOOOOOOOOOOOPAAAAAAAAAAAAAAAAAAAA");
             return "design";
         }
-        System.out.println("|||||||||||||||||||||");
         tacoOrder.addTaco(taco);
         log.info("Processing taco: {}", taco);
         return "redirect:/orders/current";

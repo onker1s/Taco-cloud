@@ -1,4 +1,5 @@
 package tacos.web;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 import tacos.Ingredient;
 import tacos.Ingredient.Type;
 import tacos.Taco;
@@ -34,9 +36,8 @@ public class DesignTacoController {
     }
     @ModelAttribute
     public void addIngredientsToModel(Model model) {
-        Iterable<Ingredient> ingredientsIterable = ingredientRepo.findAll();
-        List<Ingredient> ingredients = StreamSupport.stream(ingredientsIterable.spliterator(), false)
-                .collect(Collectors.toList());
+        Flux<Ingredient> ingredientsFlux = ingredientRepo.findAll();
+        List<Ingredient> ingredients = ingredientsFlux.collectList().block();
         Type[] types = Ingredient.Type.values();
         for (Type type : types) {
             model.addAttribute(type.toString().toLowerCase(),

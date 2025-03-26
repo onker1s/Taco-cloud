@@ -5,6 +5,17 @@ spring:
   data:
     rest:
      base-path: /api
+  boot:
+    admin:
+      client:
+          url: http://localhost:9090
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+        exclude: threaddump,heapdump
+
 
   security:
    oauth2:

@@ -1,78 +1,55 @@
 package tacos.security;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtDecoders;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.web.header.HeaderWriterFilter;
+import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 
-import tacos.User;
-import tacos.data.UserRepository;
-
-import static org.springframework.security.config.Customizer.withDefaults;
+import java.util.Collections;
 
 @Configuration
 public class SecurityConfig {
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-    @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepo) {
-        return username -> {
-            User user = userRepo.findByUsername(username);
-            if (user != null) return user;
-            throw new UsernameNotFoundException("User ‘" + username + "’ not found");
-        };
-    }
 
+  private final UserDetailsService userDetailsService;
 
+  public SecurityConfig(UserDetailsService userDetailsService) {
+    this.userDetailsService = userDetailsService;
+  }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/design", "/orders", "/design").hasRole("USER") // Вместо antMatchers()
-                        .requestMatchers(HttpMethod.POST, "/api/ingredients").hasAuthority("SCOPE_writeIngredients")
-                        .requestMatchers(HttpMethod.DELETE, "/api//ingredients").hasAuthority("SCOPE_deleteIngredients")
-                        .anyRequest().permitAll()  // Все остальные запросы разрешены
-                )
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+            .authorizeHttpRequests(auth -> auth
+                    .requestMatchers(HttpMethod.OPTIONS).permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/ingredients").permitAll()
+                    .requestMatchers("/api/tacos/**", "/api/orders/**").permitAll()
+                    .requestMatchers(HttpMethod.PATCH, "/api/ingredients").permitAll()
+                    .requestMatchers("/**").permitAll()
+            )
+            .formLogin(form -> form.loginPage("/login"))
+            .httpBasic(basic -> basic.realmName("Taco Cloud"))
+            .logout(logout -> logout.logoutSuccessUrl("/"))
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**"))
+            .addFilterAfter(new HeaderWriterFilter(Collections.singletonList(new XFrameOptionsHeaderWriter(XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN))), HeaderWriterFilter.class);
 
-                .formLogin(form -> form
-                        .loginPage("/login")  // Указание страницы логина
-                        .permitAll()  // Разрешение всем пользователям доступ к странице логина
-                )
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/")  // URL после успешного выхода
-                        .permitAll()  // Разрешение всем пользователям доступ к выходу
-                )
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**")  // Отключение CSRF для H2
-                )
-                .headers(headers -> headers
-                        // do not use any default headers unless explicitly listed
-                        .defaultsDisabled()
-                        .cacheControl(withDefaults())
-                )
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()));
+    return http.build();
+  }
 
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return NoOpPasswordEncoder.getInstance();
+  }
 
-        return http.build();
-    }
-
-
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+    return authConfig.getAuthenticationManager();
+  }
 }
-

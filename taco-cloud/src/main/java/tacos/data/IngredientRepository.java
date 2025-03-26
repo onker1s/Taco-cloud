@@ -1,6 +1,11 @@
 package tacos.data;
-import org.springframework.data.repository.CrudRepository;
+
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import tacos.Ingredient;
-public interface IngredientRepository
-        extends CrudRepository<Ingredient, String> {
+
+@CrossOrigin(origins="http://localhost:8080")
+public interface IngredientRepository 
+         extends ReactiveCrudRepository<Ingredient, String> {
+
 }
